@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Icons;
 import 'package:flutter_utils/arch.dart';
 import 'package:functional/functional.dart';
+import 'models.dart';
 import 'states.dart';
 import 'actions.dart' as Actions;
+import 'icons.dart' as Icons;
 
 /* ----------------- Splash ------------------ */
 
@@ -20,6 +22,74 @@ Widget buildSplash(BuildContext context) => Scaffold(
           ),
         ),
       ),
+    );
+
+/* ------------------- Home -------------------- */
+
+Widget buildHome(BuildContext context) => Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+      ),
+      body: Container(
+        padding: EdgeInsets.all(16),
+        child: Consumer<HomeState>(
+          rebuild: (context, oldState, newState) async {
+            if (newState.pageIndex == oldState.pageIndex)
+              return RebuildAction.skip;
+            return RebuildAction.rebuild;
+          },
+          builder: (context, state) => Consumer<HomeState>(
+            /*rebuild: (context, oldState, newState) async {
+              if (newState.pageIndex != oldState.pageIndex)
+                return RebuildAction.skip;
+              return RebuildAction.rebuild;
+            },*/
+            builder: (context, state) {
+              final todos = state.pageIndex == 0
+                  ? state.todos
+                  : state.pageIndex == 1
+                      ? state.runningTodos
+                      : state.finishedTodos;
+              return ListView.builder(
+                itemCount: state.todos.length,
+                itemBuilder: (context, index) =>
+                    _todoTile(context, todos[index]),
+              );
+            },
+          ),
+        ),
+      ),
+      bottomNavigationBar: Producer<HomeState>(
+        builder: (context, dispatcher) => BottomNavigationBar(
+          onTap: (index) {
+            dispatcher.dispatch((state) => state.copyWith(pageIndex: index));
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              title: Text('Home'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.running),
+              title: Text('Runnung'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.completed),
+              title: Text('Finished'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+Widget _todoTile(BuildContext context, Todo todo) => ListTile(
+      trailing: CircleAvatar(
+        child: Text(
+          '${todo.progress}',
+        ),
+      ),
+      title: Text(todo.name),
+      onTap: () {},
     );
 
 /* ----------------- EditTodo ------------------ */

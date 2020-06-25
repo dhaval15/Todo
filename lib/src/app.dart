@@ -13,6 +13,9 @@ class TodoApp extends StatelessWidget {
               init: UI.initSplash,
               build: UI.buildSplash,
             ),
+        '/home': (context) => FunctionalWidget(
+              build: UI.buildHome,
+            ),
       },
       debugShowCheckedModeBanner: false,
     );
