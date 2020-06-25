@@ -3,14 +3,16 @@ import 'package:sembast/sembast.dart';
 
 class HomeState {
   final int pageIndex;
-  final List<Todo> todos;
+  final Map<String, Todo> todos;
   final StoreRef todoStore;
   final Database client;
 
+  List<Todo> get allTodos => todos.values.toList();
+
   List<Todo> get runningTodos =>
-      todos.where((todo) => todo.progress < 100).toList();
+      todos.values.where((todo) => todo.progress < 100).toList();
   List<Todo> get finishedTodos =>
-      todos.where((todo) => todo.progress == 100).toList();
+      todos.values.where((todo) => todo.progress == 100).toList();
 
   HomeState({
     this.pageIndex,
@@ -21,7 +23,7 @@ class HomeState {
 
   HomeState copyWith({
     int pageIndex,
-    List<Todo> todos,
+    Map<String, Todo> todos,
     StoreRef todoStore,
     Database client,
   }) =>
