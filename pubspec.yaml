@@ -21,6 +21,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  path_provider: ^1.6.11 
   functional: 
     git:
      url: git://github.com/dhaval15/functional.git
