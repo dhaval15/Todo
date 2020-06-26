@@ -1,20 +1,20 @@
 import 'dart:async';
+import 'dart:collection';
 import 'models.dart';
 import 'states.dart';
 import 'package:flutter_utils/database.dart' as Db;
 
-FutureOr<EditTodoState> save(EditTodoState state) async {
-  if (state.todo.key != null) {
+FutureOr<HomeState> update(Todo todo, HomeState state) async {
+  if (todo.key != null) {
     Db.update(
       state.client,
       state.todoStore,
-      state.todo.toJson(),
+      todo.toJson(),
     );
-    return state;
+    return state.copyWith(todos: state.todos..[todo.key] = todo);
   } else {
-    final key =
-        await Db.insert(state.client, state.todoStore, state.todo.toJson());
-    return state.copyWith(todo: state.todo.copyWith(key: key));
+    final key = await Db.insert(state.client, state.todoStore, todo.toJson());
+    return state.copyWith(todos: state.todos..[key] = todo.copyWith(key: key));
   }
 }
 
@@ -23,7 +23,10 @@ FutureOr<HomeState> delete(Todo todo, HomeState state) async {
   return state.copyWith(todos: state.todos..remove(todo.key));
 }
 
-FutureOr<HomeState> update(Todo todo, HomeState state) async {
-  await Db.update(state.client, state.todoStore, todo.toJson());
-  return state.copyWith(todos: state.todos..[todo.key] = todo);
+FutureOr<HomeState> load(HomeState state) async {
+  final snapshots = await Db.find(state.client, state.todoStore);
+  final todos = HashMap<String, Todo>();
+  todos.addEntries(snapshots
+      .map((record) => MapEntry(record.key, Todo.fromJson(record.value))));
+  return state.copyWith(todos: todos);
 }
