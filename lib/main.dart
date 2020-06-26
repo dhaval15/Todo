@@ -6,6 +6,7 @@ import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final dir = await getApplicationDocumentsDirectory();
   Database database = await databaseFactoryIo
       .openDatabase(join(dir.path, 'todos.db'), version: 1);
