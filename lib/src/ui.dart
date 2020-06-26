@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart' hide Icons;
 import 'package:flutter_utils/arch.dart';
 import 'package:functional/functional.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'models.dart';
 import 'states.dart';
 import 'actions.dart' as Actions;
 import 'icons.dart' as Icons;
+import 'package:intl/intl.dart';
 
 /* ----------------- Splash ------------------ */
 
@@ -26,9 +28,19 @@ Widget buildSplash(BuildContext context) => Scaffold(
 
 /* ------------------- Home -------------------- */
 
+void initHome(BuildContext context) {
+  Provider.of<HomeState>(context).dispatchAsync(Actions.load);
+}
+
 Widget buildHome(BuildContext context) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Title',
+          style: TextStyle(letterSpacing: 1),
+        ),
+        centerTitle: true,
       ),
       body: Container(
         padding: EdgeInsets.all(16),
@@ -46,12 +58,12 @@ Widget buildHome(BuildContext context) => Scaffold(
             },*/
             builder: (context, state) {
               final todos = state.pageIndex == 0
-                  ? state.todos
+                  ? state.allTodos
                   : state.pageIndex == 1
                       ? state.runningTodos
                       : state.finishedTodos;
               return ListView.builder(
-                itemCount: state.todos.length,
+                itemCount: todos.length,
                 itemBuilder: (context, index) =>
                     _todoTile(context, todos[index]),
               );
@@ -59,8 +71,16 @@ Widget buildHome(BuildContext context) => Scaffold(
           ),
         ),
       ),
-      bottomNavigationBar: Producer<HomeState>(
-        builder: (context, dispatcher) => BottomNavigationBar(
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.of(context)
+              .pushNamed('/home/edit', arguments: Todo.create(''));
+        },
+      ),
+      bottomNavigationBar: ProducingConsumer<HomeState>(
+        builder: (context, dispatcher, state) => BottomNavigationBar(
+          currentIndex: state.pageIndex,
           onTap: (index) {
             dispatcher.dispatch((state) => state.copyWith(pageIndex: index));
           },
@@ -89,7 +109,38 @@ Widget _todoTile(BuildContext context, Todo todo) => ListTile(
         ),
       ),
       title: Text(todo.name),
-      onTap: () {},
+      onTap: () {
+        showDialog(context: context, builder: _todoDialog % todo);
+      },
+    );
+
+Widget _todoDialog(Todo todo, BuildContext context) => SimpleDialog(
+      title: Text(todo.name),
+      children: <Widget>[
+        Container(),
+        Row(
+          children: <Widget>[
+            Producer<HomeState>(
+              builder: (context, dispatcher) => FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  dispatcher.dispatchAsync(Actions.delete % todo);
+                },
+                child: Text('Delete'),
+              ),
+            ),
+            Producer<HomeState>(
+              builder: (context, dispatcher) => FlatButton(
+                onPressed: () {
+                  Navigator.of(context)
+                      .pushNamed('/home/edit', arguments: todo);
+                },
+                child: Text('Edit'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
 
 /* ----------------- EditTodo ------------------ */
@@ -98,48 +149,66 @@ Widget buildEditTodo(BuildContext context) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Producer<EditTodoState>(
-          builder: (context, dispatcher) => TextFormField(
-            onFieldSubmitted: (text) {
-              final action = ((EditTodoState state) =>
-                      state.copyWith(todo: state.todo.copyWith(name: text))) |
-                  (Actions.save);
-              dispatcher.mutateAsync(action);
-            },
-            decoration: InputDecoration(
-              border: InputBorder.none,
-            ),
+        title: Text('Add Todo'),
+        centerTitle: true,
+      ),
+      body: Container(
+        padding: EdgeInsets.all(16),
+        child: Center(
+          child: Builder(
+            builder: _todoForm,
           ),
         ),
       ),
-      body: Container(child: Builder(builder: _todoForm)),
     );
 
 Widget _todoForm(BuildContext context) {
-  final key = GlobalKey<FormFieldState>();
-  return FormField(
+  final key = GlobalKey<FormBuilderState>();
+  final Todo todo = ModalRoute.of(context).settings.arguments;
+  return FormBuilder(
     key: key,
-    builder: (context) => Producer<EditTodoState>(
-      builder: (context, dispatcher) => Column(
-        children: [
-          TextFormField(
-            onSaved: (text) {
-              dispatcher.mutate((state) =>
-                  state.copyWith(todo: state.todo.copyWith(name: text)));
-            },
-            decoration: InputDecoration(labelText: 'Todo Name'),
+    initialValue: todo.toMap(),
+    child: Column(
+      children: [
+        FormBuilderTextField(
+          attribute: Todo.NAME,
+          decoration: InputDecoration(labelText: 'Todo Name'),
+        ),
+        FormBuilderDateTimePicker(
+          attribute: Todo.DUE_DATE,
+          decoration: InputDecoration(labelText: 'Due Date'),
+        ),
+        Padding(
+          padding: EdgeInsets.all(8),
+          child: FormBuilderSlider(
+            label: 'Progress',
+            divisions: 100,
+            min: 0.0,
+            max: 100.0,
+            initialValue: todo.progress,
+            attribute: Todo.PROGRESS,
+            decoration: InputDecoration(
+                labelText: 'Progress', border: InputBorder.none),
+            numberFormat: NumberFormat('##0'),
           ),
-          FlatButton(
-            child: Text('Add'),
+        ),
+        Producer<HomeState>(
+          builder: (context, dispatcher) => FlatButton(
+            child: Text(todo.key != null ? 'Update' : 'Add'),
             onPressed: () {
               if (key.currentState.validate()) {
                 key.currentState.save();
-                dispatcher.dispatchAsync(Actions.save);
+                final newTodo = todo.copyWithMap(key.currentState.value);
+                dispatcher.dispatchAsync(Actions.update % newTodo);
+                Navigator.of(context).popUntil((settings) {
+                  if (settings.isFirst) return true;
+                  return false;
+                });
               }
             },
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
