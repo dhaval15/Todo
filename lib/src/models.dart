@@ -9,7 +9,7 @@ class Todo {
   final String name;
   final DateTime creationDate;
   final DateTime dueDate;
-  final int progress;
+  final double progress;
 
   Todo._({
     this.key,
@@ -21,14 +21,15 @@ class Todo {
 
   factory Todo.create(String name) => Todo._(
         name: name,
+        progress: 0.0,
         creationDate: DateTime.now(),
       );
 
   factory Todo.fromJson(dynamic json) => Todo._(
       key: json[KEY],
       name: json[NAME],
-      creationDate: json[CREATION_DATE],
-      dueDate: json[DUE_DATE],
+      creationDate: DateTime.fromMillisecondsSinceEpoch(json[CREATION_DATE]),
+      dueDate: DateTime.fromMillisecondsSinceEpoch(json[DUE_DATE]),
       progress: json[PROGRESS]);
 
   Todo copyWith({
@@ -36,7 +37,7 @@ class Todo {
     String name,
     DateTime creationDate,
     DateTime dueDate,
-    int progress,
+    double progress,
   }) =>
       Todo._(
         key: key ?? this.key,
@@ -46,13 +47,30 @@ class Todo {
         progress: progress ?? this.progress,
       );
 
-  Todo saveProgress(int progress) => copyWith(progress: progress);
+  Todo copyWithMap(
+    Map<String, dynamic> map,
+  ) =>
+      Todo._(
+        key: map[KEY] ?? this.key,
+        name: map[NAME] ?? this.name,
+        creationDate: map[CREATION_DATE] ?? this.creationDate,
+        dueDate: map[DUE_DATE] ?? this.dueDate,
+        progress: map[PROGRESS] ?? this.progress,
+      );
 
   Map<String, dynamic> toJson() => {
         KEY: key,
         NAME: name,
         CREATION_DATE: creationDate.millisecondsSinceEpoch,
         DUE_DATE: dueDate.millisecondsSinceEpoch,
+        PROGRESS: progress,
+      };
+
+  Map<String, dynamic> toMap() => {
+        KEY: key,
+        NAME: name,
+        CREATION_DATE: creationDate,
+        DUE_DATE: dueDate,
         PROGRESS: progress,
       };
 }
