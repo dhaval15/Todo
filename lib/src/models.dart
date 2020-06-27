@@ -3,10 +3,12 @@ class Todo {
       NAME = 'n',
       CREATION_DATE = 'c',
       DUE_DATE = 'd',
-      PROGRESS = 'p';
+      PROGRESS = 'p',
+      DESCRIPTION = 'z';
 
   final String key;
   final String name;
+  final String description;
   final DateTime creationDate;
   final DateTime dueDate;
   final double progress;
@@ -17,24 +19,29 @@ class Todo {
     this.creationDate,
     this.dueDate,
     this.progress,
+    this.description,
   });
 
   factory Todo.create(String name) => Todo._(
         name: name,
+        description: '',
         progress: 0.0,
         creationDate: DateTime.now(),
       );
 
   factory Todo.fromJson(dynamic json) => Todo._(
-      key: json[KEY],
-      name: json[NAME],
-      creationDate: DateTime.fromMillisecondsSinceEpoch(json[CREATION_DATE]),
-      dueDate: DateTime.fromMillisecondsSinceEpoch(json[DUE_DATE]),
-      progress: json[PROGRESS]);
+        key: json[KEY],
+        name: json[NAME],
+        description: json[DESCRIPTION],
+        creationDate: DateTime.fromMillisecondsSinceEpoch(json[CREATION_DATE]),
+        dueDate: DateTime.fromMillisecondsSinceEpoch(json[DUE_DATE]),
+        progress: json[PROGRESS],
+      );
 
   Todo copyWith({
     String key,
     String name,
+    String description,
     DateTime creationDate,
     DateTime dueDate,
     double progress,
@@ -42,6 +49,7 @@ class Todo {
       Todo._(
         key: key ?? this.key,
         name: name ?? this.name,
+        description: description ?? this.description,
         creationDate: creationDate ?? this.creationDate,
         dueDate: dueDate ?? this.dueDate,
         progress: progress ?? this.progress,
@@ -53,6 +61,7 @@ class Todo {
       Todo._(
         key: map[KEY] ?? this.key,
         name: map[NAME] ?? this.name,
+        description: map[DESCRIPTION] ?? this.description,
         creationDate: map[CREATION_DATE] ?? this.creationDate,
         dueDate: map[DUE_DATE] ?? this.dueDate,
         progress: map[PROGRESS] ?? this.progress,
@@ -61,6 +70,7 @@ class Todo {
   Map<String, dynamic> toJson() => {
         KEY: key,
         NAME: name,
+        DESCRIPTION: description,
         CREATION_DATE: creationDate.millisecondsSinceEpoch,
         DUE_DATE: dueDate.millisecondsSinceEpoch,
         PROGRESS: progress,
@@ -69,6 +79,7 @@ class Todo {
   Map<String, dynamic> toMap() => {
         KEY: key,
         NAME: name,
+        DESCRIPTION: description,
         CREATION_DATE: creationDate,
         DUE_DATE: dueDate,
         PROGRESS: progress,
