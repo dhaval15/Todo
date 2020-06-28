@@ -60,10 +60,18 @@ Widget buildHome(BuildContext context) => Scaffold(
                   : state.pageIndex == 1
                       ? state.runningTodos
                       : state.finishedTodos;
-              return ListView.builder(
-                itemCount: todos.length,
-                itemBuilder: (context, index) =>
-                    _todoTile(context, todos[index]),
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    state.pageIndex == 0
+                        ? _dashBoard(context, state)
+                        : SizedBox(),
+                    SizedBox(
+                      height: state.pageIndex == 0 ? 16 : 0,
+                    ),
+                    ...todos.map((_todoTile % context)),
+                  ],
+                ),
               );
             },
           ),
@@ -99,6 +107,57 @@ Widget buildHome(BuildContext context) => Scaffold(
             BottomNavigationBarItem(
               icon: Icon(Icons.completed),
               title: Text('Finished'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+Widget _dashBoard(BuildContext context, HomeState state) => Card(
+      color: Theme.of(context).accentColor,
+      child: Container(
+        padding: EdgeInsets.all(16),
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${state.finishedTodos.length}/${state.allTodos.length}',
+              style: Theme.of(context)
+                  .textTheme
+                  .headline4
+                  .copyWith(color: Colors.black87),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Text(
+                'Finished',
+                style: TextStyle(
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            Divider(
+              thickness: 1,
+              height: 24,
+              color: Colors.black12,
+            ),
+            Text(
+              '${state.runningTodos.length}/${state.allTodos.length}',
+              style: Theme.of(context)
+                  .textTheme
+                  .headline4
+                  .copyWith(color: Colors.black87),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Text(
+                'Running',
+                style: TextStyle(
+                  color: Colors.black87,
+                ),
+              ),
             ),
           ],
         ),
@@ -198,10 +257,7 @@ Widget _todoProgressDialog(Todo todo, BuildContext context) {
   );
 }
 
-Widget _dashboard(BuildContext context) => Card();
-
 /* ----------------- EditTodo ------------------ */
-
 Widget buildEditTodo(BuildContext context) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
