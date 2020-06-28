@@ -19,8 +19,11 @@ Widget buildSplash(BuildContext context) => Scaffold(
       body: Container(
         child: Center(
           child: Text(
-            'Todo',
-            style: Theme.of(context).textTheme.headline4,
+            'TODO',
+            style: Theme.of(context)
+                .textTheme
+                .headline4
+                .copyWith(letterSpacing: 2),
           ),
         ),
       ),
@@ -43,7 +46,7 @@ Widget buildHome(BuildContext context) => Scaffold(
         centerTitle: true,
       ),
       body: Container(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(8),
         child: Consumer<HomeState>(
           rebuild: (context, oldState, newState) async {
             if (newState.pageIndex == oldState.pageIndex)
@@ -51,11 +54,6 @@ Widget buildHome(BuildContext context) => Scaffold(
             return RebuildAction.rebuild;
           },
           builder: (context, state) => Consumer<HomeState>(
-            /*rebuild: (context, oldState, newState) async {
-              if (newState.pageIndex != oldState.pageIndex)
-                return RebuildAction.skip;
-              return RebuildAction.rebuild;
-            },*/
             builder: (context, state) {
               final todos = state.pageIndex == 0
                   ? state.allTodos
@@ -72,7 +70,11 @@ Widget buildHome(BuildContext context) => Scaffold(
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: Icon(
+          Icons.add,
+          size: 20,
+        ),
+        mini: true,
         onPressed: () {
           Navigator.of(context)
               .pushNamed('/home/edit', arguments: Todo.create(''));
@@ -81,6 +83,7 @@ Widget buildHome(BuildContext context) => Scaffold(
       bottomNavigationBar: ProducingConsumer<HomeState>(
         builder: (context, dispatcher, state) => BottomNavigationBar(
           currentIndex: state.pageIndex,
+          iconSize: 24,
           onTap: (index) {
             dispatcher.dispatch((state) => state.copyWith(pageIndex: index));
           },
@@ -103,9 +106,25 @@ Widget buildHome(BuildContext context) => Scaffold(
     );
 
 Widget _todoTile(BuildContext context, Todo todo) => ListTile(
-      trailing: CircleAvatar(
-        child: Text(
-          '${todo.progress}',
+      trailing: GestureDetector(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            builder: _todoProgressDialog % todo,
+          );
+        },
+        child: CircleAvatar(
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Theme.of(context).accentColor,
+          child: todo.progress < 100
+              ? Text(
+                  '${todo.progress.toInt()}',
+                  style: TextStyle(fontSize: 12),
+                )
+              : Icon(
+                  Icons.completedAvatar,
+                  size: 16,
+                ),
         ),
       ),
       title: Text(todo.name),
@@ -143,6 +162,44 @@ Widget _todoDialog(Todo todo, BuildContext context) => SimpleDialog(
       ],
     );
 
+Widget _todoProgressDialog(Todo todo, BuildContext context) {
+  final key = GlobalKey<FormBuilderState>();
+  return Container(
+    padding: EdgeInsets.symmetric(horizontal: 16),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        FormBuilder(
+          key: key,
+          child: FormBuilderSlider(
+            attribute: Todo.PROGRESS,
+            min: 0,
+            max: 100,
+            divisions: 100,
+            initialValue: todo.progress,
+            decoration: InputDecoration(border: InputBorder.none),
+          ),
+        ),
+        Producer<HomeState>(
+          builder: (context, dispatcher) => FlatButton(
+            child: Text('Update'),
+            onPressed: () {
+              key.currentState.save();
+              final progress = key.currentState.value[Todo.PROGRESS];
+              dispatcher.dispatchAsync(
+                  Actions.update % todo.copyWith(progress: progress));
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _dashboard(BuildContext context) => Card();
+
 /* ----------------- EditTodo ------------------ */
 
 Widget buildEditTodo(BuildContext context) => Scaffold(
@@ -169,15 +226,19 @@ Widget _todoForm(BuildContext context) {
     key: key,
     initialValue: todo.toMap(),
     child: Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         FormBuilderTextField(
           attribute: Todo.NAME,
           decoration: InputDecoration(labelText: 'Todo Name'),
         ),
+        SizedBox(height: 8),
         FormBuilderDateTimePicker(
           attribute: Todo.DUE_DATE,
           decoration: InputDecoration(labelText: 'Due Date'),
         ),
+        SizedBox(height: 8),
         Padding(
           padding: EdgeInsets.all(8),
           child: FormBuilderSlider(
