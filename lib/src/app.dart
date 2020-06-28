@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_utils/arch.dart';
 import 'package:flutter_utils/database.dart';
-import 'models.dart';
 import 'states.dart';
 import 'ui.dart' as UI;
+
+const accentColor = Color(0xFFFFDD44);
 
 class TodoApp extends StatelessWidget {
   final Database database;
@@ -25,6 +26,20 @@ class TodoApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.red,
           brightness: Brightness.dark,
+          accentColor: accentColor,
+          floatingActionButtonTheme: FloatingActionButtonThemeData(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          ),
+          sliderTheme: SliderThemeData(
+            valueIndicatorColor: accentColor,
+            activeTrackColor: accentColor,
+            thumbColor: accentColor,
+            overlayColor: Color(0x99FFDD44),
+          ),
+          buttonTheme: ButtonThemeData(
+            buttonColor: accentColor,
+          ),
         ),
         initialRoute: '/splash',
         routes: {
