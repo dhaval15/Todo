@@ -7,6 +7,7 @@ import 'states.dart';
 import 'actions.dart' as Actions;
 import 'icons.dart' as Icons;
 import 'package:intl/intl.dart';
+import 'package:time_ago_provider/time_ago_provider.dart' as timeAgo;
 
 /* ----------------- Splash ------------------ */
 
@@ -102,7 +103,7 @@ Widget buildHome(BuildContext context) => Scaffold(
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.running),
-              title: Text('Runnung'),
+              title: Text('Running'),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.completed),
@@ -187,6 +188,7 @@ Widget _todoTile(BuildContext context, Todo todo) => ListTile(
         ),
       ),
       title: Text(todo.name),
+      subtitle: Text(timeAgo.format(todo.dueDate, enableFromNow: true)),
       onTap: () {
         showDialog(context: context, builder: _todoDialog % todo);
       },
