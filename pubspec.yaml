@@ -21,6 +21,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  sortedmap: ^0.4.2+1
   path_provider: ^1.6.11 
   flutter_form_builder: ^3.11.3
   functional: 

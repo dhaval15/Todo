@@ -1,9 +1,11 @@
+import 'package:sortedmap/sortedmap.dart';
+
 import 'models.dart';
 import 'package:sembast/sembast.dart';
 
 class HomeState {
   final int pageIndex;
-  final Map<String, Todo> todos;
+  final SortedMap<String, Todo> todos;
   final StoreRef todoStore;
   final Database client;
 
@@ -16,10 +18,10 @@ class HomeState {
 
   HomeState({
     this.pageIndex,
-    this.todos,
+    Map<String, Todo> todos,
     this.todoStore,
     this.client,
-  });
+  }) : this.todos = SortedMap.from(todos, Ordering.byValue());
 
   HomeState copyWith({
     int pageIndex,
