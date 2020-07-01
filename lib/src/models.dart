@@ -1,4 +1,4 @@
-class Todo {
+class Todo with Comparable {
   static const KEY = 'k',
       NAME = 'n',
       CREATION_DATE = 'c',
@@ -84,4 +84,10 @@ class Todo {
         DUE_DATE: dueDate,
         PROGRESS: progress,
       };
+
+  @override
+  int compareTo(other) {
+    return other.creationDate.millisecondsSinceEpoch -
+        this.creationDate.millisecondsSinceEpoch;
+  }
 }
