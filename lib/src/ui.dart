@@ -294,6 +294,7 @@ Widget _todoForm(BuildContext context) {
         SizedBox(height: 8),
         FormBuilderDateTimePicker(
           attribute: Todo.DUE_DATE,
+          format: DateFormat('dd MMM yyyy,  h:mm a'),
           decoration: InputDecoration(labelText: 'Due Date'),
         ),
         SizedBox(height: 8),
@@ -302,13 +303,14 @@ Widget _todoForm(BuildContext context) {
           child: FormBuilderSlider(
             label: 'Progress',
             divisions: 100,
-            min: 0.0,
-            max: 100.0,
+            min: 0,
+            max: 100,
             initialValue: todo.progress,
+            valueTransformer: (value) => value.toInt(),
             attribute: Todo.PROGRESS,
             decoration: InputDecoration(
                 labelText: 'Progress', border: InputBorder.none),
-            numberFormat: NumberFormat('##0'),
+            numberFormat: NumberFormat('###'),
           ),
         ),
         Producer<HomeState>(
